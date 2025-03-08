@@ -18,7 +18,7 @@ namespace Interfaces_lab2
         private Stopwatch timer = new Stopwatch();
         private Random random = new Random();
 
-        private int exp_number = 1;
+        private int exp_number = 0;
         private int button_count = 2;
         private int buttonClicks_count = 0;
         private float sum_time = 0f;
@@ -53,6 +53,14 @@ namespace Interfaces_lab2
             buttons.Add(button8);
             buttons.Add(button9);
 
+            foreach (var b in buttons)
+            {
+                if (b is Button button)
+                {
+                    button.Click += Button_Click;
+                }
+            }
+
             colors.Add(Color.White);
             colors.Add(Color.Green);
             colors.Add(Color.Blue);
@@ -61,7 +69,6 @@ namespace Interfaces_lab2
             fonts.Add(new Font("Arial", 12, FontStyle.Bold));
             fonts.Add(new Font("Arial", 12, FontStyle.Italic));
             fonts.Add(new Font("Arial", 12, FontStyle.Underline));
-
         }
 
         /// <summary>
@@ -80,6 +87,9 @@ namespace Interfaces_lab2
             }
         }
 
+        /// <summary>
+        /// Makes 3-9 butons invisible
+        /// </summary>
         private void MakeButtonsInvisible()
         {
             for (int i = 2; i < buttons.Count; i++)
@@ -137,7 +147,7 @@ namespace Interfaces_lab2
                             csvwriter.WriteLine($"{count};{colors[color_index]};{avg_time}");
                             break;
                         case 3:
-                            csvwriter.WriteLine($"{count};{fonts[font_index]};{avg_time}");
+                            csvwriter.WriteLine($"{count};{fonts[font_index].Style};{avg_time}");
                             break;
                     }
                     
@@ -209,89 +219,130 @@ namespace Interfaces_lab2
             return Y;
         }
 
+        /// <summary>
+        /// Sets the font color to colors[color_index]
+        /// </summary>
         private void ChangeFontColor()
         {
-            for(int i = 0; i < button_count; i++)
-            {
-                buttons[i].ForeColor = Color.Yellow;
-            }
+            DefaultFontColor();
 
             int button_index = random.Next(0, button_count);
 
-            //ИСКЛЮЧЕНИЕ ПРИ ЗАВЕРШЕНИИ 2 ТЕСТА
             buttons[button_index].ForeColor = colors[color_index];
         }
 
+        /// <summary>
+        /// Sets the font color to default (yellow)
+        /// </summary>
+        private void DefaultFontColor()
+        {
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                buttons[i].ForeColor = Color.Yellow;
+            }
+        }
+
+        /// <summary>
+        /// Sets the font outline to fonts[font_index]
+        /// </summary>
         private void ChangeFontOutline()
         {
-            for(int i = 0; i < button_count; i++)
-            {
-                buttons[i].Font = new Font("Arial", 12, FontStyle.Regular);
-            }
+            DefaultFontOutline();
 
             int button_index = random.Next(0, button_count);
 
             buttons[button_index].Font = fonts[font_index];
         }
 
+        /// <summary>
+        /// Sets teh font outline to default (Regular)
+        /// </summary>
+        private void DefaultFontOutline()
+        {
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                buttons[i].Font = new Font("Arial", 12, FontStyle.Regular);
+            }
+        }
+
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            if(test_ended)
+            if(exp_number != 0)
             {
-                switch (exp_number)
+                DefaultFontOutline();
+                DefaultFontColor();
+
+                if (test_ended)
                 {
-                    case 1:
-                        MessageBox.Show("Experiment 1 ended", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                        //buttonExp2.Visible = true;
-                        break;
-                    case 2:
-                        MessageBox.Show("Experiment 2 ended", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                        //buttonExp2.Visible = true;
-                        break;
-                    case 3:
-                        MessageBox.Show("Experiment 3 ended", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                        //buttonExp2.Visible = true;
-                        break;
+                    switch (exp_number)
+                    {
+                        case 1:
+                            MessageBox.Show("Experiment 1 ended", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            exp_number = 0;
+                            break;
+                        case 2:
+                            MessageBox.Show("Experiment 2 ended", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            exp_number = 0;
+                            break;
+                        case 3:
+                            MessageBox.Show("Experiment 3 ended", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            exp_number = 0;
+                            break;
+                    }
+
                 }
 
-            }
+                if (add_button)
+                {
+                    MakeButtonVisible();
+                    add_button = false;
+                }
 
-            if(add_button)
-            {
-                MakeButtonVisible();
-                add_button = false;
-            }
+                if (exp_number == 1)
+                {
+                    AssignNumberToButton();
+                    labelNumber.Text = random.Next(1, button_count + 1).ToString();
+                }
 
-            if (exp_number == 1)
-            {
-                AssignNumberToButton();
-                labelNumber.Text = random.Next(1, button_count + 1).ToString();
-            }
+                if (exp_number == 2)
+                    ChangeFontColor();
 
-            if(exp_number == 2)
-                ChangeFontColor();
-            if(change_color)
-            {
-                change_color = false;
-                color_index++;
-                MakeButtonsInvisible();
-                ChangeFontColor();                 
-            }
+                if (change_color)
+                {
+                    change_color = false;
+                    color_index++;
+                    MakeButtonsInvisible();
+                    ChangeFontColor();
+                }
 
-            if (exp_number == 3)
-                ChangeFontOutline();
-            if(change_font)
-            {
-                change_font = false;
-                font_index++;
-                MakeButtonsInvisible();
-                ChangeFontOutline();
-            }
+                if (exp_number == 3)
+                    ChangeFontOutline();
 
-            timer.Reset();
-            int Y = FindYForCursor();
-            Cursor.Position = this.PointToScreen(new System.Drawing.Point(451, Y));
-            timer.Start();
+                if (change_font)
+                {
+                    change_font = false;
+                    font_index++;
+                    MakeButtonsInvisible();
+                    ChangeFontOutline();
+                }
+
+                timer.Reset();
+                int Y = FindYForCursor();
+                Cursor.Position = this.PointToScreen(new System.Drawing.Point(451, Y));
+                timer.Start();
+            }
+            
+        }
+
+        private void buttonExp1_Click(object sender, EventArgs e)
+        {
+            exp_number = 1;
+
+            MakeButtonsInvisible();
+
+            labelNumber.Visible = true;
+
+            buttonStart.Focus();
         }
 
         private void buttonExp2_Click(object sender, EventArgs e)
@@ -316,283 +367,43 @@ namespace Interfaces_lab2
             buttonStart.Focus();
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {        
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button1.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if(button1.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button1.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button2_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Delegate for processing clicks
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Click(object sender, EventArgs e)
         {
-            switch (exp_number)
+            if(sender is Button button)
             {
-                case 1:
-                    if (int.Parse(button2.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button2.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button2.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
+                switch (exp_number)
+                { 
+                    case 1:
+                        if (int.Parse(button.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
+                        {
+                            buttonClicks_count++;
+                            TimeMeasure();
+                        }
+                        break;
+                    case 2:
+                        if (button.ForeColor == colors[color_index])
+                        {
+                            buttonClicks_count++;
+                            TimeMeasure();
+                        }
+                        break;
+                    case 3:
+                        if (button.Font == fonts[font_index])
+                        {
+                            buttonClicks_count++;
+                            TimeMeasure();
+                        }
+                        break;
 
+                }
+
+                buttonStart.Focus();
             }
-
-            buttonStart.Focus();
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button3.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button3.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button3.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button4.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button4.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button4.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button5.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button5.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button5.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button6.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button6.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button6.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button7.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button7.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button7.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button8_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button8.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button8.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button8.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
-        }
-
-        private void button9_Click(object sender, EventArgs e)
-        {
-            switch (exp_number)
-            {
-                case 1:
-                    if (int.Parse(button9.Text.ToString()) == int.Parse(labelNumber.Text.ToString()))
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 2:
-                    if (button9.ForeColor == colors[color_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-                case 3:
-                    if (button9.Font == fonts[font_index])
-                    {
-                        buttonClicks_count++;
-                        TimeMeasure();
-                    }
-                    break;
-
-            }
-
-            buttonStart.Focus();
         }
     }
 }
